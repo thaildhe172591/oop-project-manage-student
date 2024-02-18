@@ -1,0 +1,144 @@
+
+Những phần cần sửa
+
+** Class Validation
+
+[// kiem tra id bi trung hay khong 
+[    public static String checkId(String msg, ArrayList<Student> list) {
+[
+[        while (true) {
+[            String id = inputString(msg);
+[            for (Student student : list) {
+[                if (student.getId().equalsIgnoreCase(id)) {// Đánh dấu là đã tồn tại học sinh với ID đã nhập
+[                    break;
+[                }
+[            }
+[            return id; // Trả về ID nếu không có học sinh nào trùng khớp           
+[        }
+[    }
+
+
+** Class Manager
+
+// 1. create student
+    public void createStudent(ArrayList<Student> list) {
+        // declear length of list student 
+        int length = list.size();
+
+        // vong lap de nhap thong tin hoc sinh den khi nguoi dung nhap lua chon cau tra loi là no 
+        while (true) {
+            String id = Validation.checkId("Enter id student: ", list);
+            Student existingStudent = findStudentById(id, list);
+            if (existingStudent != null) {
+                int semester = Validation.checkInt("Enter semester student", 1, 9);
+                String courseName = Validation.checkCourseName("Enter course name: ");
+                list.add(new Student(id, existingStudent.getName(), courseName, semester));
+            } else {
+                String name = Validation.inputString("Enter name student: ");
+                int semester = Validation.checkInt("Enter semester student", 1, 9);
+                String courseName = Validation.checkCourseName("Enter course name: ");
+                Student newStudent = new Student(id, name, courseName, semester);
+                list.add(newStudent);
+            }
+
+            // neu so luong hoc sinh lon hon 10 thi hien thi message 
+            if (list.size() >= 10) {
+                if (Validation.checkYesNo("Do you want to continue (Y/N)")) {
+                    continue;
+                } else {
+                    break;
+                }
+            }// yeu cau nguoi dung nhap den khi so luong lon hon 10 thi thoi 
+            else {
+                System.out.println("Add Student Success ! Number student in list is " + ((length++) + 1) + " , please input data student till to enough 10 student");
+                continue;
+            }
+        }
+
+    }
+
+// 2. Tạo một method mới dùng trong "createStudent"
+private Student findStudentById(String id, List<Student> list) {
+        for (Student student : list) {
+            if (student.getId().equalsIgnoreCase(id)) {
+                return student;
+            }
+        }
+        return null;
+    }
+
+// 3. Sửa phần update và delete
+public void updateOrDeleteStudentByID(ArrayList<Student> list) {
+        // user input id 
+        String id_to_find = Validation.inputString("Input an ID to find a student in the list: ");
+
+        // get Student object(s) with matching ID
+        ArrayList<Student> foundStudents = searchStudentsByID(list, id_to_find);
+
+        // ID does not exist
+        if (foundStudents.isEmpty()) {
+            System.err.println("Student does not exist in the system");
+            return;
+        }
+
+        // Display the found students
+        displayListStudent(foundStudents, "List of Students Found By ID: ");
+
+        // Prompt user to select a student to update
+        int selectedStudentIndex = Validation.checkInt("Select a student: ", 1, foundStudents.size()) - 1;
+        Student selectedStudent = foundStudents.get(selectedStudentIndex);
+        // Prompt user to select the attribute to update
+        try {
+            boolean optionChoice = Validation.checkUpdateDelete("Do you want to update[U] or delete[D] ?");
+
+            if (optionChoice) {
+                updateStudent(selectedStudent, list);
+            } else {
+                deleteStudent(selectedStudent, list);
+            }
+            if (Validation.checkYesNo("Do you want to continue (Y/N)")) {
+                displayListStudent(foundStudents, "List of Students Found By ID: ");
+
+                // Prompt user to select a student to update
+                selectedStudentIndex = Validation.checkInt("Select a student: ", 1, foundStudents.size()) - 1;
+                selectedStudent = foundStudents.get(selectedStudentIndex);
+                optionChoice = Validation.checkUpdateDelete("Do you want to update[U] or delete[D] ?");
+                if (optionChoice) {
+                    updateStudent(selectedStudent, list);
+                } else {
+                    deleteStudent(selectedStudent, list);
+                }
+            }
+        } catch (NumberFormatException e) {
+            System.out.println("Re-input !");
+        }
+    }
+
+
+// 4. Sửa 2 method update và delete
+// method update student 
+    public void updateStudent(Student findedStudent, ArrayList<Student> list) {
+        // show information student before update 
+        System.out.println("Data student before update: ");
+        findedStudent.printData();
+        // new line
+        System.out.println("");
+
+        int semester = Validation.checkInt("Enter semester student", 1, 9);
+        // nhap course name 
+        String courseName = Validation.checkCourseName("Enter course name: ");
+
+        // update student by setter method 
+        findedStudent.setCourseName(courseName);
+        findedStudent.setSemester(semester);
+
+        // show message 
+        System.out.println("Update successful");
+
+    }
+
+// method to delete student 
+    public void deleteStudent(Student findedStudent, ArrayList<Student> list) {
+        list.remove(findedStudent);
+        System.out.println("Delete successful");
+    }
